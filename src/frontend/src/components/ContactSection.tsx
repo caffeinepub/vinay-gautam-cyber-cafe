@@ -1,4 +1,5 @@
-import { Clock, MapPin, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Download, MapPin, Phone } from "lucide-react";
 import { motion } from "motion/react";
 
 const CONTACT_ITEMS = [
@@ -25,6 +26,52 @@ const CONTACT_ITEMS = [
   },
 ];
 
+function InstallAppButton() {
+  const handleInstall = () => {
+    const win = window as unknown as {
+      __pwaInstallPrompt?: { prompt: () => void };
+    };
+    if (win.__pwaInstallPrompt) {
+      win.__pwaInstallPrompt.prompt();
+    } else {
+      alert(
+        "To install the app:\n\n" +
+          "Android (Chrome): Tap the menu (⋮) → 'Add to Home Screen' or look for the Install banner.\n\n" +
+          "iPhone (Safari): Tap Share → 'Add to Home Screen'.\n\n" +
+          "Computer (Chrome): Click the install icon (⊕) in the address bar.",
+      );
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="mt-6 p-5 rounded-2xl border border-border bg-card shadow-sm"
+    >
+      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
+        Download Our App
+      </p>
+      <p className="text-sm text-foreground mb-4">
+        Install <strong>justdovinay.com</strong> on your phone and access all
+        government services anytime, anywhere.
+      </p>
+      <Button
+        onClick={handleInstall}
+        className="w-full gap-2 font-bold text-base py-5"
+        style={{ background: "oklch(0.52 0.14 145)", color: "#fff" }}
+      >
+        <Download className="w-5 h-5" />
+        Download App
+      </Button>
+      <p className="text-xs text-muted-foreground mt-3 text-center">
+        Works on Android, iPhone & Computer — no Play Store needed.
+      </p>
+    </motion.div>
+  );
+}
+
 export default function ContactSection() {
   return (
     <section id="contact" className="py-20 bg-muted">
@@ -41,10 +88,39 @@ export default function ContactSection() {
           <p className="section-subheading">
             Visit us in person or reach out — we're happy to help.
           </p>
+
+          {/* Owner photo in big circle */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="flex flex-col items-center mt-8 mb-4"
+          >
+            <div
+              className="rounded-full overflow-hidden border-4 shadow-lg"
+              style={{
+                width: 160,
+                height: 160,
+                borderColor: "oklch(0.52 0.14 145)",
+              }}
+            >
+              <img
+                src="/assets/uploads/img_20250924_091131-019d2019-dd09-703c-93d0-031663d7f545-1.png"
+                alt="Vinay Gautam"
+                className="w-full h-full object-cover object-top"
+              />
+            </div>
+            <p className="mt-3 font-bold text-lg text-foreground">
+              Vinay Gautam
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Owner of justdovinay.com
+            </p>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
-          {/* Contact info */}
+          {/* Contact info + Download button */}
           <motion.div
             initial={{ opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -66,6 +142,9 @@ export default function ContactSection() {
                 </div>
               </div>
             ))}
+
+            {/* Download App Button */}
+            <InstallAppButton />
           </motion.div>
 
           {/* Map placeholder */}
