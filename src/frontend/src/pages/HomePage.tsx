@@ -3,11 +3,14 @@ import ApplyOnlineSection from "../components/ApplyOnlineSection";
 import BookAppointment from "../components/BookAppointment";
 import ContactSection from "../components/ContactSection";
 import DownloadsSection from "../components/DownloadsSection";
+import ESathiSection from "../components/ESathiSection";
+import FinanceBankSection from "../components/FinanceBankSection";
 import Footer from "../components/Footer";
 import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
 import SchemesSection from "../components/SchemesSection";
 import ScrollToTop from "../components/ScrollToTop";
+import SearchBar from "../components/SearchBar";
 import ServicesAidBar from "../components/ServicesAidBar";
 import ServicesSection from "../components/ServicesSection";
 import SloganBanner from "../components/SloganBanner";
@@ -28,6 +31,7 @@ export default function HomePage({ onGoAdmin }: Props) {
     <div className="min-h-screen bg-background">
       <SloganBanner />
       <Navbar onGoAdmin={onGoAdmin} onScrollTo={scrollTo} />
+      <SearchBar />
       <ServicesAidBar />
       <main>
         <HeroSection onScrollTo={scrollTo} />
@@ -35,6 +39,8 @@ export default function HomePage({ onGoAdmin }: Props) {
         <DownloadsSection />
         <ApplyOnlineSection />
         <AadhaarPanSection />
+        <ESathiSection />
+        <FinanceBankSection />
         <SchemesSection />
         <WhyChooseUs />
         <UpdatesSection />

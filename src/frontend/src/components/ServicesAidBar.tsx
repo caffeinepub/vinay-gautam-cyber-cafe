@@ -30,6 +30,12 @@ const ALL_SERVICES = [
     color: "oklch(0.74 0.16 60)",
   },
   {
+    title: "eSathi UP",
+    icon: <FileText className="w-6 h-6" />,
+    link: "https://esathi.up.gov.in",
+    color: "rgb(234 88 12)",
+  },
+  {
     title: "Income Tax",
     icon: <FileText className="w-6 h-6" />,
     link: "https://www.incometax.gov.in",

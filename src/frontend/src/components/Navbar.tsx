@@ -8,6 +8,8 @@ const NAV_LINKS = [
   { label: "Downloads", id: "downloads" },
   { label: "Apply Online", id: "apply" },
   { label: "Aadhaar & PAN", id: "aadhaar-pan" },
+  { label: "eSathi UP", id: "esathi" },
+  { label: "Finance & Bank", id: "finance-bank" },
   { label: "Schemes", id: "schemes" },
   { label: "Updates", id: "updates" },
   { label: "Contact", id: "contact" },
@@ -79,6 +81,12 @@ export default function Navbar({ onGoAdmin, onScrollTo }: Props) {
               onClick={() => handleNav(link.id)}
               className={`nav-link text-xs px-2.5 py-2 ${
                 active === link.id ? "active" : ""
+              } ${
+                link.id === "esathi"
+                  ? "text-orange-600 font-bold"
+                  : link.id === "finance-bank"
+                    ? "text-green-700 font-bold"
+                    : ""
               }`}
               data-ocid="nav.link"
             >
@@ -131,7 +139,13 @@ export default function Navbar({ onGoAdmin, onScrollTo }: Props) {
               key={link.id}
               onClick={() => handleNav(link.id)}
               className={`text-left py-2 text-sm font-medium ${
-                active === link.id ? "text-accent" : "text-foreground"
+                active === link.id
+                  ? "text-accent"
+                  : link.id === "esathi"
+                    ? "text-orange-600 font-bold"
+                    : link.id === "finance-bank"
+                      ? "text-green-700 font-bold"
+                      : "text-foreground"
               }`}
             >
               {link.label}
