@@ -8,7 +8,9 @@ import HeroSection from "../components/HeroSection";
 import Navbar from "../components/Navbar";
 import SchemesSection from "../components/SchemesSection";
 import ScrollToTop from "../components/ScrollToTop";
+import ServicesAidBar from "../components/ServicesAidBar";
 import ServicesSection from "../components/ServicesSection";
+import SloganBanner from "../components/SloganBanner";
 import UpdatesSection from "../components/UpdatesSection";
 import WhyChooseUs from "../components/WhyChooseUs";
 
@@ -24,7 +26,9 @@ export default function HomePage({ onGoAdmin }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
+      <SloganBanner />
       <Navbar onGoAdmin={onGoAdmin} onScrollTo={scrollTo} />
+      <ServicesAidBar />
       <main>
         <HeroSection onScrollTo={scrollTo} />
         <ServicesSection />
