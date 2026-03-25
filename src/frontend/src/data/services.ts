@@ -8,13 +8,12 @@ export interface ServiceItem {
 export const AID_BAR_SERVICES = [
   { name: "Aadhaar", icon: "🪪", href: "#aadhaar-pan" },
   { name: "PAN Card", icon: "💳", href: "#aadhaar-pan" },
-  { name: "Voter Card", icon: "🗳️", href: "#apply-docs-earn" },
-  { name: "Apply & Earn", icon: "🏆", href: "#apply-docs-earn" },
+  { name: "Voter Card", icon: "🗳️", href: "#apply-docs" },
   { name: "Driving Licence", icon: "🚗", href: "#esathi" },
-  { name: "Passport", icon: "📘", href: "#apply-docs-earn" },
+  { name: "Passport", icon: "📘", href: "#apply-docs" },
+  { name: "Udyam Cert.", icon: "🏭", href: "#apply-docs" },
   { name: "Caste Cert.", icon: "📜", href: "#esathi" },
   { name: "Birth Cert.", icon: "👶", href: "#esathi" },
-  { name: "MSME/Udyam", icon: "🏭", href: "#apply-docs-earn" },
   { name: "Bank Account", icon: "🏦", href: "#finance" },
   { name: "PM Yojana", icon: "🇮🇳", href: "#apply-services" },
   { name: "Income Cert.", icon: "📋", href: "#esathi" },
@@ -392,9 +391,9 @@ export const ESATHI_SERVICES: ServiceItem[] = [
     icon: "🌾",
   },
   {
-    name: "Voter ID",
+    name: "Voter ID (UP eSathi)",
     url: "https://esathi.up.gov.in",
-    description: "Voter card registration",
+    description: "UP voter card via eSathi",
     icon: "🗳️",
   },
   {
@@ -591,27 +590,6 @@ export const BANK_ACCOUNTS: ServiceItem[] = [
   },
 ];
 
-export const APPLY_EARN_SERVICES: ServiceItem[] = [
-  {
-    name: "Voter ID Card",
-    url: "https://voters.eci.gov.in",
-    description: "Apply for Voter ID via Election Commission",
-    icon: "🗳️",
-  },
-  {
-    name: "Passport Apply",
-    url: "https://passportindia.gov.in",
-    description: "Apply/renew passport via Passport Seva",
-    icon: "📘",
-  },
-  {
-    name: "PAN Card via NSDL",
-    url: "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html",
-    description: "Apply new PAN via NSDL official portal",
-    icon: "💳",
-  },
-];
-
 export const ALL_SEARCHABLE = [
   ...DOWNLOAD_SERVICES.map((s) => ({ ...s, category: "Download Documents" })),
   ...GOVT_SCHEMES.map((s) => ({ ...s, category: "Government Schemes" })),
@@ -620,5 +598,25 @@ export const ALL_SEARCHABLE = [
   ...ESATHI_SERVICES.map((s) => ({ ...s, category: "eSathi Services" })),
   ...LOAN_APPS.map((s) => ({ ...s, category: "Loan Apps" })),
   ...BANK_ACCOUNTS.map((s) => ({ ...s, category: "Bank Accounts" })),
-  ...APPLY_EARN_SERVICES.map((s) => ({ ...s, category: "Apply & Earn" })),
+  {
+    name: "Voter ID Card (ECI)",
+    url: "https://voters.eci.gov.in",
+    description: "Apply new voter ID via official ECI portal",
+    icon: "🗳️",
+    category: "Apply Services",
+  },
+  {
+    name: "Passport Apply",
+    url: "https://passportindia.gov.in",
+    description: "Apply/renew passport via Passport Seva portal",
+    icon: "📘",
+    category: "Apply Services",
+  },
+  {
+    name: "Udyam Certificate",
+    url: "https://udyamregistration.gov.in",
+    description: "MSME/Udyam business registration certificate",
+    icon: "🏭",
+    category: "Apply Services",
+  },
 ];

@@ -4,7 +4,6 @@ import { Download, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import AadhaarPanSection from "./components/AadhaarPanSection";
-import AffiliateSection from "./components/AffiliateSection";
 import BookingModal from "./components/BookingModal";
 import ContactSection from "./components/ContactSection";
 import DocumentApplyEarnSection from "./components/DocumentApplyEarnSection";
@@ -14,11 +13,9 @@ import FinanceBankSection from "./components/FinanceBankSection";
 import Footer from "./components/Footer";
 import GovtSchemesSection from "./components/GovtSchemesSection";
 import HeroSection from "./components/HeroSection";
-import LeadGenerationSection from "./components/LeadGenerationSection";
 import MessagesSection from "./components/MessagesSection";
 import Navbar from "./components/Navbar";
 import NotificationTickerBar from "./components/NotificationTickerBar";
-import ReferralWalletSection from "./components/ReferralWalletSection";
 import SearchBar from "./components/SearchBar";
 import ServicesAidBar from "./components/ServicesAidBar";
 import SloganBanner from "./components/SloganBanner";
@@ -74,13 +71,10 @@ export default function App() {
           <HeroSection />
           <DownloadDocumentsSection />
           <GovtSchemesSection />
-          <AadhaarPanSection onBook={openBooking} />
           <DocumentApplyEarnSection />
+          <AadhaarPanSection onBook={openBooking} />
           <FinanceBankSection />
           <ESathiSection onBook={openBooking} />
-          <AffiliateSection />
-          <ReferralWalletSection />
-          <LeadGenerationSection />
           <MessagesSection />
           <ContactSection
             onInstall={handleInstall}
