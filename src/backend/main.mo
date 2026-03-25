@@ -2,15 +2,18 @@ import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
-import Order "mo:core/Order";
 import Text "mo:core/Text";
 import Array "mo:core/Array";
+import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Principal "mo:core/Principal";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Migration "migration";
 
+// Data migration
+(with migration = Migration.run)
 actor {
   type ServiceCategory = {
     #aadhaar;
@@ -66,6 +69,46 @@ actor {
 
   type UserRole = AccessControl.UserRole;
 
+  type Wallet = {
+    balance : Nat; // Stored in paise
+    totalEarned : Nat;
+    totalWithdrawn : Nat;
+    referralCount : Nat;
+  };
+
+  type Referral = {
+    code : Text;
+    referrer : ?Principal;
+    referrerReward : Nat;
+    referredBy : ?Principal;
+  };
+
+  type WithdrawalStatus = {
+    #pending;
+    #approved;
+    #rejected;
+  };
+
+  type WithdrawalRequest = {
+    id : Nat;
+    user : Principal;
+    amount : Nat;
+    bankAccountNumber : Text;
+    ifscCode : Text;
+    accountHolderName : Text;
+    status : WithdrawalStatus;
+    createdAt : Int;
+    processedAt : ?Int;
+  };
+
+  type CommissionLog = {
+    id : Nat;
+    amount : Nat;
+    source : Text;
+    date : Int;
+    description : Text;
+  };
+
   public type UserProfile = {
     name : Text;
     phone : Text;
@@ -96,6 +139,12 @@ actor {
     };
   };
 
+  module WithdrawalRequest {
+    public func compare(a : WithdrawalRequest, b : WithdrawalRequest) : Order.Order {
+      Int.compare(b.createdAt, a.createdAt);
+    };
+  };
+
   // Access control
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -106,11 +155,42 @@ actor {
   let news = Map.empty<Nat, News>();
   let appointments = Map.empty<Nat, Appointment>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let wallets = Map.empty<Principal, Wallet>();
+  let referrals = Map.empty<Principal, Referral>();
+  let withdrawalRequests = Map.empty<Nat, WithdrawalRequest>();
+  let commissionLogs = Map.empty<Nat, CommissionLog>();
 
   var nextServiceId = 1;
   var nextSchemeId = 1;
   var nextNewsId = 1;
   var nextAppointmentId = 1;
+  var nextWithdrawalRequestId = 1;
+  var nextCommissionLogId = 1;
+
+  let referralRewardAmount = 5000; // 50 rupees in paise
+
+  // Helper to get wallet or create new
+  func getWalletInternal(user : Principal) : Wallet {
+    switch (wallets.get(user)) {
+      case (?wallet) { wallet };
+      case (null) {
+        let newWallet : Wallet = {
+          balance = 0;
+          totalEarned = 0;
+          totalWithdrawn = 0;
+          referralCount = 0;
+        };
+        wallets.add(user, newWallet);
+        newWallet;
+      };
+    };
+  };
+
+  func checkAdmin(caller : Principal) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform this action");
+    };
+  };
 
   // User Profile Functions
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
@@ -134,11 +214,242 @@ actor {
     userProfiles.add(caller, profile);
   };
 
+  // WALLET SYSTEM
+
+  public query ({ caller }) func getWallet() : async Wallet {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view wallets");
+    };
+    getWalletInternal(caller);
+  };
+
+  public query ({ caller }) func getAllWallets() : async [Wallet] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all wallets");
+    };
+    wallets.values().toArray();
+  };
+
+  public shared ({ caller }) func creditWallet(user : Principal, amount : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can credit wallets");
+    };
+    let oldWallet = getWalletInternal(user);
+    let newWallet = {
+      oldWallet with
+      balance = oldWallet.balance + amount;
+      totalEarned = oldWallet.totalEarned + amount;
+    };
+    wallets.add(user, newWallet);
+  };
+
+  // REFERRAL SYSTEM
+
+  public shared ({ caller }) func registerReferral(code : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can register referrals");
+    };
+    if (code == "") {
+      Runtime.trap("Referral code cannot be empty");
+    };
+    // Check if caller already has a referral code
+    switch (referrals.get(caller)) {
+      case (?existing) {
+        Runtime.trap("User already has a referral code");
+      };
+      case (null) {};
+    };
+    // Check if code is already taken by another user
+    let codeExists = referrals.values().find(
+      func(r) { r.code == code }
+    );
+    switch (codeExists) {
+      case (?_) {
+        Runtime.trap("Referral code already exists");
+      };
+      case (null) {};
+    };
+    let newReferral = {
+      code;
+      referrer = ?caller;
+      referrerReward = 0;
+      referredBy = null;
+    };
+    referrals.add(caller, newReferral);
+  };
+
+  public shared ({ caller }) func registerWithReferralCode(referralCode : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can register referrals");
+    };
+    if (referralCode == "") {
+      Runtime.trap("Referral code cannot be empty");
+    };
+    // Check if caller already used a referral code
+    switch (referrals.get(caller)) {
+      case (?existing) {
+        Runtime.trap("User already registered with a referral code");
+      };
+      case (null) {};
+    };
+    // Find the referrer by code
+    var referrerPrincipal : ?Principal = null;
+    for ((principal, referral) in referrals.entries()) {
+      if (referral.code == referralCode) {
+        referrerPrincipal := ?principal;
+      };
+    };
+
+    switch (referrerPrincipal) {
+      case (null) {
+        Runtime.trap("Invalid referral code");
+      };
+      case (?refPrincipal) {
+        // Prevent self-referral
+        if (refPrincipal == caller) {
+          Runtime.trap("Cannot use your own referral code");
+        };
+        // Credit referrer's wallet with cashback
+        creditWalletInternal(refPrincipal, referralRewardAmount);
+        // Save referral relationship for new user
+        let newReferral = {
+          code = referralCode;
+          referrer = null;
+          referrerReward = referralRewardAmount;
+          referredBy = ?refPrincipal;
+        };
+        referrals.add(caller, newReferral);
+      };
+    };
+  };
+
+  func creditWalletInternal(user : Principal, amount : Nat) {
+    let oldWallet = getWalletInternal(user);
+    let newWallet = {
+      oldWallet with
+      balance = oldWallet.balance + amount;
+      totalEarned = oldWallet.totalEarned + amount;
+      referralCount = oldWallet.referralCount + 1;
+    };
+    wallets.add(user, newWallet);
+  };
+
+  // WITHDRAWAL REQUESTS
+
+  public shared ({ caller }) func submitWithdrawalRequest(amount : Nat, bankAccountNumber : Text, ifscCode : Text, accountHolderName : Text) : async Int {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can submit withdrawal requests");
+    };
+    if (amount == 0) {
+      Runtime.trap("Withdrawal amount must be greater than 0");
+    };
+    // Check if user has sufficient balance
+    let wallet = getWalletInternal(caller);
+    if (wallet.balance < amount) {
+      Runtime.trap("Insufficient balance");
+    };
+
+    let id = nextWithdrawalRequestId;
+    let newRequest : WithdrawalRequest = {
+      id;
+      user = caller;
+      amount;
+      bankAccountNumber;
+      ifscCode;
+      accountHolderName;
+      status = #pending;
+      createdAt = Time.now();
+      processedAt = null;
+    };
+    withdrawalRequests.add(id, newRequest);
+    nextWithdrawalRequestId += 1;
+    id;
+  };
+
+  public query ({ caller }) func getWithdrawalRequest(id : Nat) : async WithdrawalRequest {
+    switch (withdrawalRequests.get(id)) {
+      case (null) { Runtime.trap("Withdrawal request not found") };
+      case (?request) {
+        // Only the requester or admin can view
+        if (caller != request.user and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Can only view your own withdrawal requests");
+        };
+        request;
+      };
+    };
+  };
+
+  public query ({ caller }) func getMyWithdrawalRequests() : async [WithdrawalRequest] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view withdrawal requests");
+    };
+    withdrawalRequests.values().filter(
+      func(req) { req.user == caller }
+    ).toArray().sort();
+  };
+
+  public shared ({ caller }) func updateWithdrawalRequest(id : Nat, status : WithdrawalStatus) : async () {
+    checkAdmin(caller);
+    switch (withdrawalRequests.get(id)) {
+      case (null) { Runtime.trap("Withdrawal request not found") };
+      case (?request) {
+        let updatedRequest = {
+          request with
+          status;
+          processedAt = ?Time.now();
+        };
+        withdrawalRequests.add(id, updatedRequest);
+        // If approved, deduct from user's wallet
+        if (status == #approved) {
+          let wallet = getWalletInternal(request.user);
+          if (wallet.balance >= request.amount) {
+            let newWallet = {
+              wallet with
+              balance = wallet.balance - request.amount;
+              totalWithdrawn = wallet.totalWithdrawn + request.amount;
+            };
+            wallets.add(request.user, newWallet);
+          };
+        };
+      };
+    };
+  };
+
+  public query ({ caller }) func getAllWithdrawalRequests() : async [WithdrawalRequest] {
+    checkAdmin(caller);
+    withdrawalRequests.values().toArray().sort();
+  };
+
+  // AFFILIATE COMMISSION LOGGING
+
+  public shared ({ caller }) func logCommission(amount : Nat, source : Text, description : Text) : async Int {
+    checkAdmin(caller);
+    let id = nextCommissionLogId;
+    let commissionLog : CommissionLog = {
+      id;
+      amount;
+      source;
+      date = Time.now();
+      description;
+    };
+    commissionLogs.add(id, commissionLog);
+    nextCommissionLogId += 1;
+    id;
+  };
+
+  public query ({ caller }) func getAllCommissionLogs() : async [CommissionLog] {
+    checkAdmin(caller);
+    commissionLogs.values().toArray();
+  };
+
+  public query ({ caller }) func getTotalCommission() : async Nat {
+    checkAdmin(caller);
+    commissionLogs.values().foldLeft(0, func(acc, log) { acc + log.amount });
+  };
+
   // Admin functions
   public shared ({ caller }) func addService(service : Service) : async Int {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     let id = nextServiceId;
     let newService = {
       service with
@@ -150,9 +461,7 @@ actor {
   };
 
   public shared ({ caller }) func updateService(id : Nat, service : Service) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     if (not services.containsKey(id)) { Runtime.trap("Service not found") };
     let updatedService = {
       service with
@@ -162,17 +471,13 @@ actor {
   };
 
   public shared ({ caller }) func deleteService(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     if (not services.containsKey(id)) { Runtime.trap("Service not found") };
     services.remove(id);
   };
 
   public shared ({ caller }) func addScheme(scheme : Scheme) : async Int {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     let id = nextSchemeId;
     let newScheme = {
       scheme with
@@ -184,9 +489,7 @@ actor {
   };
 
   public shared ({ caller }) func updateScheme(id : Nat, scheme : Scheme) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     if (not schemes.containsKey(id)) { Runtime.trap("Scheme not found") };
     let updatedScheme = {
       scheme with
@@ -196,17 +499,13 @@ actor {
   };
 
   public shared ({ caller }) func deleteScheme(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     if (not schemes.containsKey(id)) { Runtime.trap("Scheme not found") };
     schemes.remove(id);
   };
 
   public shared ({ caller }) func addNews(newsItem : News) : async Int {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     let id = nextNewsId;
     let newNews = {
       newsItem with
@@ -218,9 +517,7 @@ actor {
   };
 
   public shared ({ caller }) func updateNews(id : Nat, newsItem : News) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     if (not news.containsKey(id)) { Runtime.trap("News item not found") };
     let updatedNews = {
       newsItem with
@@ -230,17 +527,13 @@ actor {
   };
 
   public shared ({ caller }) func deleteNews(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     if (not news.containsKey(id)) { Runtime.trap("News item not found") };
     news.remove(id);
   };
 
   public shared ({ caller }) func updateAppointmentStatus(id : Nat, status : AppointmentStatus) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
     switch (appointments.get(id)) {
       case (null) { Runtime.trap("Appointment not found") };
       case (?appointment) {
@@ -267,6 +560,9 @@ actor {
   };
 
   public shared ({ caller }) func bookAppointment(appointment : Appointment) : async Int {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can book appointments");
+    };
     let id = nextAppointmentId;
     let newAppointment = {
       appointment with
@@ -295,17 +591,13 @@ actor {
 
   // Admin-only function to view all appointments
   public query ({ caller }) func getAllAppointments() : async [Appointment] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all appointments");
-    };
+    checkAdmin(caller);
     appointments.values().toArray().sort();
   };
 
   // Seed initial data (run once by admin)
   public shared ({ caller }) func seedInitialData() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
+    checkAdmin(caller);
 
     // Add services
     ignore await addService({

@@ -1,4 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -6,39 +11,39 @@
 
 @layer base {
   :root {
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
-    /* Navy primary */
-    --primary: 0.26 0.075 242;
+    /* Green primary — Indian government green */
+    --primary: 0.48 0.17 145;
     --primary-foreground: 1 0 0;
 
-    /* Green accent */
-    --accent: 0.52 0.14 145;
+    /* Deep green secondary */
+    --secondary: 0.38 0.12 145;
+    --secondary-foreground: 1 0 0;
+
+    /* Red accent for search */
+    --accent: 0.54 0.22 27;
     --accent-foreground: 1 0 0;
 
-    /* Orange secondary */
-    --secondary: 0.74 0.16 60;
-    --secondary-foreground: 0.15 0 0;
-
     /* Backgrounds */
-    --background: 0.97 0.008 242;
-    --foreground: 0.17 0.02 264;
+    --background: 0.98 0 0;
+    --foreground: 0.15 0.02 260;
 
     --card: 1 0 0;
-    --card-foreground: 0.17 0.02 264;
+    --card-foreground: 0.15 0.02 260;
 
     --popover: 1 0 0;
-    --popover-foreground: 0.17 0.02 264;
+    --popover-foreground: 0.15 0.02 260;
 
-    --muted: 0.95 0.01 242;
-    --muted-foreground: 0.52 0.02 264;
+    --muted: 0.96 0.005 145;
+    --muted-foreground: 0.5 0.02 260;
 
     --destructive: 0.577 0.245 27.325;
     --destructive-foreground: 1 0 0;
 
-    --border: 0.9 0.01 242;
-    --input: 0.9 0.01 242;
-    --ring: 0.52 0.14 145;
+    --border: 0.9 0.01 145;
+    --input: 0.9 0.01 145;
+    --ring: 0.48 0.17 145;
 
     --chart-1: 0.646 0.222 41.116;
     --chart-2: 0.6 0.118 184.704;
@@ -47,13 +52,13 @@
     --chart-5: 0.769 0.188 70.08;
 
     --sidebar: 1 0 0;
-    --sidebar-foreground: 0.17 0.02 264;
-    --sidebar-primary: 0.26 0.075 242;
+    --sidebar-foreground: 0.15 0.02 260;
+    --sidebar-primary: 0.48 0.17 145;
     --sidebar-primary-foreground: 1 0 0;
-    --sidebar-accent: 0.95 0.01 242;
-    --sidebar-accent-foreground: 0.17 0.02 264;
-    --sidebar-border: 0.9 0.01 242;
-    --sidebar-ring: 0.52 0.14 145;
+    --sidebar-accent: 0.96 0.005 145;
+    --sidebar-accent-foreground: 0.15 0.02 260;
+    --sidebar-border: 0.9 0.01 145;
+    --sidebar-ring: 0.48 0.17 145;
   }
 
   * {
@@ -71,24 +76,16 @@
 }
 
 @layer components {
-  .nav-link {
-    @apply relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors;
-  }
-  .nav-link::after {
-    content: "";
-    @apply absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all duration-300;
-  }
-  .nav-link:hover::after,
-  .nav-link.active::after {
-    @apply w-full;
-  }
-  .nav-link.active {
-    @apply text-accent font-semibold;
-  }
   .section-heading {
-    @apply text-3xl md:text-4xl font-bold text-primary mb-3;
+    @apply text-2xl md:text-3xl font-bold text-primary mb-2;
   }
   .section-subheading {
-    @apply text-muted-foreground text-lg max-w-2xl mx-auto;
+    @apply text-muted-foreground text-base max-w-2xl mx-auto;
+  }
+  .service-card {
+    @apply bg-white border border-border rounded-lg p-4 shadow-sm hover:shadow-md hover:border-primary transition-all duration-200 cursor-pointer;
+  }
+  .green-card {
+    @apply bg-green-50 border-2 border-green-500 rounded-lg p-4 hover:bg-green-100 transition-colors;
   }
 }

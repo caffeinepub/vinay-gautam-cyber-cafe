@@ -59,6 +59,35 @@ export const Appointment = IDL.Record({
   'serviceId' : IDL.Nat,
   'phone' : IDL.Text,
 });
+export const CommissionLog = IDL.Record({
+  'id' : IDL.Nat,
+  'source' : IDL.Text,
+  'date' : IDL.Int,
+  'description' : IDL.Text,
+  'amount' : IDL.Nat,
+});
+export const Wallet = IDL.Record({
+  'balance' : IDL.Nat,
+  'totalEarned' : IDL.Nat,
+  'referralCount' : IDL.Nat,
+  'totalWithdrawn' : IDL.Nat,
+});
+export const WithdrawalStatus = IDL.Variant({
+  'pending' : IDL.Null,
+  'approved' : IDL.Null,
+  'rejected' : IDL.Null,
+});
+export const WithdrawalRequest = IDL.Record({
+  'id' : IDL.Nat,
+  'bankAccountNumber' : IDL.Text,
+  'status' : WithdrawalStatus,
+  'ifscCode' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'user' : IDL.Principal,
+  'accountHolderName' : IDL.Text,
+  'processedAt' : IDL.Opt(IDL.Int),
+  'amount' : IDL.Nat,
+});
 export const UserProfile = IDL.Record({
   'name' : IDL.Text,
   'email' : IDL.Text,
@@ -72,28 +101,53 @@ export const idlService = IDL.Service({
   'addService' : IDL.Func([Service], [IDL.Int], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'bookAppointment' : IDL.Func([Appointment], [IDL.Int], []),
+  'creditWallet' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
   'deleteNews' : IDL.Func([IDL.Nat], [], []),
   'deleteScheme' : IDL.Func([IDL.Nat], [], []),
   'deleteService' : IDL.Func([IDL.Nat], [], []),
   'getAllAppointments' : IDL.Func([], [IDL.Vec(Appointment)], ['query']),
+  'getAllCommissionLogs' : IDL.Func([], [IDL.Vec(CommissionLog)], ['query']),
   'getAllNews' : IDL.Func([], [IDL.Vec(News)], ['query']),
   'getAllSchemes' : IDL.Func([], [IDL.Vec(Scheme)], ['query']),
   'getAllServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
+  'getAllWallets' : IDL.Func([], [IDL.Vec(Wallet)], ['query']),
+  'getAllWithdrawalRequests' : IDL.Func(
+      [],
+      [IDL.Vec(WithdrawalRequest)],
+      ['query'],
+    ),
   'getAppointment' : IDL.Func([IDL.Nat], [Appointment], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getMyWithdrawalRequests' : IDL.Func(
+      [],
+      [IDL.Vec(WithdrawalRequest)],
+      ['query'],
+    ),
+  'getTotalCommission' : IDL.Func([], [IDL.Nat], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getWallet' : IDL.Func([], [Wallet], ['query']),
+  'getWithdrawalRequest' : IDL.Func([IDL.Nat], [WithdrawalRequest], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'logCommission' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [IDL.Int], []),
+  'registerReferral' : IDL.Func([IDL.Text], [], []),
+  'registerWithReferralCode' : IDL.Func([IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'seedInitialData' : IDL.Func([], [], []),
+  'submitWithdrawalRequest' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Int],
+      [],
+    ),
   'updateAppointmentStatus' : IDL.Func([IDL.Nat, AppointmentStatus], [], []),
   'updateNews' : IDL.Func([IDL.Nat, News], [], []),
   'updateScheme' : IDL.Func([IDL.Nat, Scheme], [], []),
   'updateService' : IDL.Func([IDL.Nat, Service], [], []),
+  'updateWithdrawalRequest' : IDL.Func([IDL.Nat, WithdrawalStatus], [], []),
 });
 
 export const idlInitArgs = [];
@@ -150,6 +204,35 @@ export const idlFactory = ({ IDL }) => {
     'serviceId' : IDL.Nat,
     'phone' : IDL.Text,
   });
+  const CommissionLog = IDL.Record({
+    'id' : IDL.Nat,
+    'source' : IDL.Text,
+    'date' : IDL.Int,
+    'description' : IDL.Text,
+    'amount' : IDL.Nat,
+  });
+  const Wallet = IDL.Record({
+    'balance' : IDL.Nat,
+    'totalEarned' : IDL.Nat,
+    'referralCount' : IDL.Nat,
+    'totalWithdrawn' : IDL.Nat,
+  });
+  const WithdrawalStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'approved' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
+  const WithdrawalRequest = IDL.Record({
+    'id' : IDL.Nat,
+    'bankAccountNumber' : IDL.Text,
+    'status' : WithdrawalStatus,
+    'ifscCode' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'user' : IDL.Principal,
+    'accountHolderName' : IDL.Text,
+    'processedAt' : IDL.Opt(IDL.Int),
+    'amount' : IDL.Nat,
+  });
   const UserProfile = IDL.Record({
     'name' : IDL.Text,
     'email' : IDL.Text,
@@ -163,28 +246,57 @@ export const idlFactory = ({ IDL }) => {
     'addService' : IDL.Func([Service], [IDL.Int], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'bookAppointment' : IDL.Func([Appointment], [IDL.Int], []),
+    'creditWallet' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'deleteNews' : IDL.Func([IDL.Nat], [], []),
     'deleteScheme' : IDL.Func([IDL.Nat], [], []),
     'deleteService' : IDL.Func([IDL.Nat], [], []),
     'getAllAppointments' : IDL.Func([], [IDL.Vec(Appointment)], ['query']),
+    'getAllCommissionLogs' : IDL.Func([], [IDL.Vec(CommissionLog)], ['query']),
     'getAllNews' : IDL.Func([], [IDL.Vec(News)], ['query']),
     'getAllSchemes' : IDL.Func([], [IDL.Vec(Scheme)], ['query']),
     'getAllServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
+    'getAllWallets' : IDL.Func([], [IDL.Vec(Wallet)], ['query']),
+    'getAllWithdrawalRequests' : IDL.Func(
+        [],
+        [IDL.Vec(WithdrawalRequest)],
+        ['query'],
+      ),
     'getAppointment' : IDL.Func([IDL.Nat], [Appointment], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getMyWithdrawalRequests' : IDL.Func(
+        [],
+        [IDL.Vec(WithdrawalRequest)],
+        ['query'],
+      ),
+    'getTotalCommission' : IDL.Func([], [IDL.Nat], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getWallet' : IDL.Func([], [Wallet], ['query']),
+    'getWithdrawalRequest' : IDL.Func(
+        [IDL.Nat],
+        [WithdrawalRequest],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'logCommission' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [IDL.Int], []),
+    'registerReferral' : IDL.Func([IDL.Text], [], []),
+    'registerWithReferralCode' : IDL.Func([IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'seedInitialData' : IDL.Func([], [], []),
+    'submitWithdrawalRequest' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Int],
+        [],
+      ),
     'updateAppointmentStatus' : IDL.Func([IDL.Nat, AppointmentStatus], [], []),
     'updateNews' : IDL.Func([IDL.Nat, News], [], []),
     'updateScheme' : IDL.Func([IDL.Nat, Scheme], [], []),
     'updateService' : IDL.Func([IDL.Nat, Service], [], []),
+    'updateWithdrawalRequest' : IDL.Func([IDL.Nat, WithdrawalStatus], [], []),
   });
 };
 

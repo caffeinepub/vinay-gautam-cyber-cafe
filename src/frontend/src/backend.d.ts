@@ -7,6 +7,30 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export interface CommissionLog {
+    id: bigint;
+    source: string;
+    date: bigint;
+    description: string;
+    amount: bigint;
+}
+export interface Appointment {
+    id: bigint;
+    status: AppointmentStatus;
+    bookedBy: Principal;
+    name: string;
+    createdAt: bigint;
+    email: string;
+    preferredDate: bigint;
+    serviceId: bigint;
+    phone: string;
+}
+export interface Wallet {
+    balance: bigint;
+    totalEarned: bigint;
+    referralCount: bigint;
+    totalWithdrawn: bigint;
+}
 export interface Service {
     id: bigint;
     title: string;
@@ -21,16 +45,16 @@ export interface News {
     date: bigint;
     category: string;
 }
-export interface Appointment {
+export interface WithdrawalRequest {
     id: bigint;
-    status: AppointmentStatus;
-    bookedBy: Principal;
-    name: string;
+    bankAccountNumber: string;
+    status: WithdrawalStatus;
+    ifscCode: string;
     createdAt: bigint;
-    email: string;
-    preferredDate: bigint;
-    serviceId: bigint;
-    phone: string;
+    user: Principal;
+    accountHolderName: string;
+    processedAt?: bigint;
+    amount: bigint;
 }
 export interface Scheme {
     id: bigint;
@@ -63,28 +87,46 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum WithdrawalStatus {
+    pending = "pending",
+    approved = "approved",
+    rejected = "rejected"
+}
 export interface backendInterface {
     addNews(newsItem: News): Promise<bigint>;
     addScheme(scheme: Scheme): Promise<bigint>;
     addService(service: Service): Promise<bigint>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     bookAppointment(appointment: Appointment): Promise<bigint>;
+    creditWallet(user: Principal, amount: bigint): Promise<void>;
     deleteNews(id: bigint): Promise<void>;
     deleteScheme(id: bigint): Promise<void>;
     deleteService(id: bigint): Promise<void>;
     getAllAppointments(): Promise<Array<Appointment>>;
+    getAllCommissionLogs(): Promise<Array<CommissionLog>>;
     getAllNews(): Promise<Array<News>>;
     getAllSchemes(): Promise<Array<Scheme>>;
     getAllServices(): Promise<Array<Service>>;
+    getAllWallets(): Promise<Array<Wallet>>;
+    getAllWithdrawalRequests(): Promise<Array<WithdrawalRequest>>;
     getAppointment(id: bigint): Promise<Appointment>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getMyWithdrawalRequests(): Promise<Array<WithdrawalRequest>>;
+    getTotalCommission(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getWallet(): Promise<Wallet>;
+    getWithdrawalRequest(id: bigint): Promise<WithdrawalRequest>;
     isCallerAdmin(): Promise<boolean>;
+    logCommission(amount: bigint, source: string, description: string): Promise<bigint>;
+    registerReferral(code: string): Promise<void>;
+    registerWithReferralCode(referralCode: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     seedInitialData(): Promise<void>;
+    submitWithdrawalRequest(amount: bigint, bankAccountNumber: string, ifscCode: string, accountHolderName: string): Promise<bigint>;
     updateAppointmentStatus(id: bigint, status: AppointmentStatus): Promise<void>;
     updateNews(id: bigint, newsItem: News): Promise<void>;
     updateScheme(id: bigint, scheme: Scheme): Promise<void>;
     updateService(id: bigint, service: Service): Promise<void>;
+    updateWithdrawalRequest(id: bigint, status: WithdrawalStatus): Promise<void>;
 }

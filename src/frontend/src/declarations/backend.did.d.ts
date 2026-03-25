@@ -25,6 +25,13 @@ export type AppointmentStatus = { 'cancelled' : null } |
   { 'pending' : null } |
   { 'completed' : null } |
   { 'confirmed' : null };
+export interface CommissionLog {
+  'id' : bigint,
+  'source' : string,
+  'date' : bigint,
+  'description' : string,
+  'amount' : bigint,
+}
 export interface News {
   'id' : bigint,
   'title' : string,
@@ -60,6 +67,26 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface Wallet {
+  'balance' : bigint,
+  'totalEarned' : bigint,
+  'referralCount' : bigint,
+  'totalWithdrawn' : bigint,
+}
+export interface WithdrawalRequest {
+  'id' : bigint,
+  'bankAccountNumber' : string,
+  'status' : WithdrawalStatus,
+  'ifscCode' : string,
+  'createdAt' : bigint,
+  'user' : Principal,
+  'accountHolderName' : string,
+  'processedAt' : [] | [bigint],
+  'amount' : bigint,
+}
+export type WithdrawalStatus = { 'pending' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addNews' : ActorMethod<[News], bigint>,
@@ -67,20 +94,35 @@ export interface _SERVICE {
   'addService' : ActorMethod<[Service], bigint>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'bookAppointment' : ActorMethod<[Appointment], bigint>,
+  'creditWallet' : ActorMethod<[Principal, bigint], undefined>,
   'deleteNews' : ActorMethod<[bigint], undefined>,
   'deleteScheme' : ActorMethod<[bigint], undefined>,
   'deleteService' : ActorMethod<[bigint], undefined>,
   'getAllAppointments' : ActorMethod<[], Array<Appointment>>,
+  'getAllCommissionLogs' : ActorMethod<[], Array<CommissionLog>>,
   'getAllNews' : ActorMethod<[], Array<News>>,
   'getAllSchemes' : ActorMethod<[], Array<Scheme>>,
   'getAllServices' : ActorMethod<[], Array<Service>>,
+  'getAllWallets' : ActorMethod<[], Array<Wallet>>,
+  'getAllWithdrawalRequests' : ActorMethod<[], Array<WithdrawalRequest>>,
   'getAppointment' : ActorMethod<[bigint], Appointment>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getMyWithdrawalRequests' : ActorMethod<[], Array<WithdrawalRequest>>,
+  'getTotalCommission' : ActorMethod<[], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getWallet' : ActorMethod<[], Wallet>,
+  'getWithdrawalRequest' : ActorMethod<[bigint], WithdrawalRequest>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'logCommission' : ActorMethod<[bigint, string, string], bigint>,
+  'registerReferral' : ActorMethod<[string], undefined>,
+  'registerWithReferralCode' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'seedInitialData' : ActorMethod<[], undefined>,
+  'submitWithdrawalRequest' : ActorMethod<
+    [bigint, string, string, string],
+    bigint
+  >,
   'updateAppointmentStatus' : ActorMethod<
     [bigint, AppointmentStatus],
     undefined
@@ -88,6 +130,10 @@ export interface _SERVICE {
   'updateNews' : ActorMethod<[bigint, News], undefined>,
   'updateScheme' : ActorMethod<[bigint, Scheme], undefined>,
   'updateService' : ActorMethod<[bigint, Service], undefined>,
+  'updateWithdrawalRequest' : ActorMethod<
+    [bigint, WithdrawalStatus],
+    undefined
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

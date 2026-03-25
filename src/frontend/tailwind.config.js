@@ -9,7 +9,7 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: { "2xl": "1400px" },
     },
     extend: {
@@ -67,24 +67,15 @@ export default {
           border: "oklch(var(--sidebar-border))",
           ring: "oklch(var(--sidebar-ring))",
         },
-        navy: {
-          DEFAULT: "oklch(var(--primary) / <alpha-value>)",
-          dark: "#0B2A4A",
-        },
-        green: {
-          cafe: "oklch(var(--accent) / <alpha-value>)",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xl: "1rem",
-        "2xl": "1.5rem",
       },
       boxShadow: {
-        card: "0 4px 24px -4px rgba(11,42,74,0.10)",
-        "card-hover": "0 8px 32px -4px rgba(11,42,74,0.18)",
+        card: "0 2px 12px -2px rgba(0,100,50,0.10)",
+        "card-hover": "0 6px 24px -4px rgba(0,100,50,0.18)",
       },
       keyframes: {
         "accordion-down": {
@@ -95,15 +86,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "fade-up": {
-          from: { opacity: "0", transform: "translateY(24px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-up": "fade-up 0.5s ease-out both",
       },
     },
   },
