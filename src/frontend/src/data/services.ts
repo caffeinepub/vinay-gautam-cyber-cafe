@@ -8,12 +8,13 @@ export interface ServiceItem {
 export const AID_BAR_SERVICES = [
   { name: "Aadhaar", icon: "🪪", href: "#aadhaar-pan" },
   { name: "PAN Card", icon: "💳", href: "#aadhaar-pan" },
-  { name: "Voter Card", icon: "🗳️", href: "#esathi" },
+  { name: "Voter Card", icon: "🗳️", href: "#apply-docs-earn" },
+  { name: "Apply & Earn", icon: "🏆", href: "#apply-docs-earn" },
   { name: "Driving Licence", icon: "🚗", href: "#esathi" },
-  { name: "Passport", icon: "📘", href: "#apply-services" },
+  { name: "Passport", icon: "📘", href: "#apply-docs-earn" },
   { name: "Caste Cert.", icon: "📜", href: "#esathi" },
   { name: "Birth Cert.", icon: "👶", href: "#esathi" },
-  { name: "MSME/Udyam", icon: "🏭", href: "#apply-services" },
+  { name: "MSME/Udyam", icon: "🏭", href: "#apply-docs-earn" },
   { name: "Bank Account", icon: "🏦", href: "#finance" },
   { name: "PM Yojana", icon: "🇮🇳", href: "#apply-services" },
   { name: "Income Cert.", icon: "📋", href: "#esathi" },
@@ -261,8 +262,8 @@ export const AADHAAR_SERVICES: ServiceItem[] = [
 export const PAN_SERVICES: ServiceItem[] = [
   {
     name: "Apply New PAN",
-    url: "https://www.incometax.gov.in",
-    description: "Apply for new PAN card",
+    url: "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html",
+    description: "Apply new PAN via NSDL official portal",
   },
   {
     name: "Download PAN",
@@ -590,6 +591,27 @@ export const BANK_ACCOUNTS: ServiceItem[] = [
   },
 ];
 
+export const APPLY_EARN_SERVICES: ServiceItem[] = [
+  {
+    name: "Voter ID Card",
+    url: "https://voters.eci.gov.in",
+    description: "Apply for Voter ID via Election Commission",
+    icon: "🗳️",
+  },
+  {
+    name: "Passport Apply",
+    url: "https://passportindia.gov.in",
+    description: "Apply/renew passport via Passport Seva",
+    icon: "📘",
+  },
+  {
+    name: "PAN Card via NSDL",
+    url: "https://www.onlineservices.nsdl.com/paam/endUserRegisterContact.html",
+    description: "Apply new PAN via NSDL official portal",
+    icon: "💳",
+  },
+];
+
 export const ALL_SEARCHABLE = [
   ...DOWNLOAD_SERVICES.map((s) => ({ ...s, category: "Download Documents" })),
   ...GOVT_SCHEMES.map((s) => ({ ...s, category: "Government Schemes" })),
@@ -598,4 +620,5 @@ export const ALL_SEARCHABLE = [
   ...ESATHI_SERVICES.map((s) => ({ ...s, category: "eSathi Services" })),
   ...LOAN_APPS.map((s) => ({ ...s, category: "Loan Apps" })),
   ...BANK_ACCOUNTS.map((s) => ({ ...s, category: "Bank Accounts" })),
+  ...APPLY_EARN_SERVICES.map((s) => ({ ...s, category: "Apply & Earn" })),
 ];

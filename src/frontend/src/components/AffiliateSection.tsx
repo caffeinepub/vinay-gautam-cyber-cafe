@@ -87,16 +87,16 @@ const AFFILIATE_PROGRAMS = [
 
 export default function AffiliateSection() {
   return (
-    <section id="earn-money" className="py-10 px-4 bg-amber-50">
+    <section id="earn-money" className="py-10 px-4 bg-muted">
       <div className="max-w-6xl mx-auto">
         {/* Outer box */}
-        <div className="border-4 border-amber-400 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-100 p-6 shadow-xl">
+        <div className="border-4 border-amber-700 rounded-2xl bg-card p-6 shadow-xl">
           <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-amber-800 mb-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-amber-400 mb-2">
               💰 Affiliate Marketing — Earn Money From Home
             </h2>
-            <p className="text-amber-700 text-sm md:text-base max-w-2xl mx-auto">
-              Join these programs and earn commission. Vinay Gautam earns
+            <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
+              Join these programs and earn commission. Website owner earns
               commission when you sign up through these links.
             </p>
           </div>
@@ -106,26 +106,26 @@ export default function AffiliateSection() {
               <div
                 key={p.name}
                 data-ocid={`affiliate.item.${i + 1}`}
-                className="bg-white border border-amber-300 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-muted border border-amber-800/60 rounded-xl p-4 flex flex-col gap-2 shadow-sm hover:shadow-md hover:border-amber-500 transition-all"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-3xl">{p.emoji}</span>
                   <div>
-                    <p className="font-bold text-gray-800 text-sm leading-tight">
+                    <p className="font-bold text-foreground text-sm leading-tight">
                       {p.name}
                     </p>
-                    <span className="inline-block mt-0.5 text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                    <span className="inline-block mt-0.5 text-xs font-semibold bg-amber-900/60 text-amber-400 px-2 py-0.5 rounded-full">
                       {p.commission}
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 flex-1">{p.desc}</p>
+                <p className="text-xs text-muted-foreground flex-1">{p.desc}</p>
                 <a
                   href={p.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   data-ocid={`affiliate.primary_button.${i + 1}`}
-                  className="mt-1 block text-center text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white py-1.5 rounded-lg transition-colors"
+                  className="mt-1 block text-center text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white py-1.5 rounded-lg transition-colors"
                 >
                   Join Now →
                 </a>
@@ -133,8 +133,8 @@ export default function AffiliateSection() {
             ))}
           </div>
 
-          <div className="mt-6 rounded-xl bg-amber-200/60 border border-amber-300 p-4 text-center">
-            <p className="text-amber-800 text-sm font-medium">
+          <div className="mt-6 rounded-xl bg-amber-950/50 border border-amber-800 p-4 text-center">
+            <p className="text-amber-400 text-sm font-medium">
               💼 <strong>How to claim commission:</strong> After joining,
               companies send payment to your registered bank account or UPI.
               Share your account number or UPI ID with the affiliate platform

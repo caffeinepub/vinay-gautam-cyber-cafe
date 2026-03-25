@@ -3,10 +3,10 @@ import { ExternalLink } from "lucide-react";
 
 export default function FinanceBankSection() {
   return (
-    <section id="finance" className="py-12 px-4 bg-green-50">
+    <section id="finance" className="py-12 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
-        <div className="border-4 border-green-500 rounded-2xl p-6 md:p-8 bg-white">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-green-700 text-center mb-2">
+        <div className="border-4 border-green-700 rounded-2xl p-6 md:p-8 bg-card">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-green-400 text-center mb-2">
             💰 Finance & Bank Accounts Section
           </h2>
           <p className="text-center text-muted-foreground mb-8">
@@ -15,7 +15,7 @@ export default function FinanceBankSection() {
           </p>
 
           <div className="mb-8">
-            <h3 className="text-lg font-bold text-green-800 mb-4 border-b-2 border-green-200 pb-2">
+            <h3 className="text-lg font-bold text-green-400 mb-4 border-b-2 border-green-800 pb-2">
               🏦 Popular Loan Apps & Websites
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -30,11 +30,11 @@ export default function FinanceBankSection() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{s.icon}</span>
-                    <span className="font-semibold text-sm text-green-900 group-hover:text-green-700">
+                    <span className="font-semibold text-sm text-green-300 group-hover:text-green-200">
                       {s.name}
                     </span>
                   </div>
-                  <div className="text-xs text-green-700">{s.description}</div>
+                  <div className="text-xs text-green-400">{s.description}</div>
                   <ExternalLink className="h-3 w-3 text-green-500 mt-1" />
                 </a>
               ))}
@@ -42,7 +42,7 @@ export default function FinanceBankSection() {
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-green-800 mb-4 border-b-2 border-green-200 pb-2">
+            <h3 className="text-lg font-bold text-green-400 mb-4 border-b-2 border-green-800 pb-2">
               🏧 Zero Balance & Savings Accounts
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -57,11 +57,11 @@ export default function FinanceBankSection() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{s.icon}</span>
-                    <span className="font-semibold text-sm text-green-900 group-hover:text-green-700">
+                    <span className="font-semibold text-sm text-green-300 group-hover:text-green-200">
                       {s.name}
                     </span>
                   </div>
-                  <div className="text-xs text-green-700">{s.description}</div>
+                  <div className="text-xs text-green-400">{s.description}</div>
                   <ExternalLink className="h-3 w-3 text-green-500 mt-1" />
                 </a>
               ))}

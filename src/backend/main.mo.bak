@@ -208,7 +208,6 @@ actor {
   let referrals = Map.empty<Principal, Referral>();
   let withdrawalRequests = Map.empty<Nat, WithdrawalRequest>();
   let commissionLogs = Map.empty<Nat, CommissionLog>();
-  let clickRewardClaimed = Map.empty<Text, Bool>(); // key = principal#serviceKey
 
   let leads = Map.empty<Nat, LeadSubmission>();
   let reviews = Map.empty<Nat, CustomerReview>();
@@ -225,7 +224,6 @@ actor {
   var nextMessageId = 1;
 
   let referralRewardAmount = 5000; // 50 rupees in paise
-  let clickRewardAmount = 1000; // 10 rupees in paise per link click
 
   // Helper to get wallet or create new
   func getWalletInternal(user : Principal) : Wallet {
@@ -301,38 +299,6 @@ actor {
     wallets.add(user, newWallet);
   };
 
-  // CLICK-TO-EARN: Credit user wallet when they click a service link (one-time per service)
-  public shared ({ caller }) func recordServiceLinkClick(serviceKey : Text) : async Nat {
-    if (caller.isAnonymous()) {
-      Runtime.trap("Login required to earn rewards");
-    };
-    let claimKey = caller.toText() # "#" # serviceKey;
-    switch (clickRewardClaimed.get(claimKey)) {
-      case (?_) { 0 }; // Already claimed
-      case (null) {
-        clickRewardClaimed.add(claimKey, true);
-        // Credit admin/owner wallet instead of caller
-        var adminPrin : ?Principal = null;
-        for ((p, role) in accessControlState.userRoles.entries()) {
-          if (role == #admin) { adminPrin := ?p };
-        };
-        switch (adminPrin) {
-          case (?admin) {
-            let wallet = getWalletInternal(admin);
-            let newWallet = {
-              wallet with
-              balance = wallet.balance + clickRewardAmount;
-              totalEarned = wallet.totalEarned + clickRewardAmount;
-            };
-            wallets.add(admin, newWallet);
-          };
-          case (null) {};
-        };
-        clickRewardAmount;
-      };
-    };
-  };
-
   // REFERRAL SYSTEM
 
   public shared ({ caller }) func registerReferral(code : Text) : async () {
@@ -344,7 +310,7 @@ actor {
     };
     // Check if caller already has a referral code
     switch (referrals.get(caller)) {
-      case (?_existing) {
+      case (?existing) {
         Runtime.trap("User already has a referral code");
       };
       case (null) {};
@@ -377,7 +343,7 @@ actor {
     };
     // Check if caller already used a referral code
     switch (referrals.get(caller)) {
-      case (?_existing) {
+      case (?existing) {
         Runtime.trap("User already registered with a referral code");
       };
       case (null) {};
@@ -493,10 +459,9 @@ actor {
         if (status == #approved) {
           let wallet = getWalletInternal(request.user);
           if (wallet.balance >= request.amount) {
-            let newBalance : Nat = wallet.balance - request.amount;
             let newWallet = {
               wallet with
-              balance = newBalance;
+              balance = wallet.balance - request.amount;
               totalWithdrawn = wallet.totalWithdrawn + request.amount;
             };
             wallets.add(request.user, newWallet);
@@ -638,15 +603,18 @@ actor {
   };
 
   // Public functions - accessible to everyone including guests
-  public query func getAllServices() : async [Service] {
+  public query ({ caller }) func getAllServices() : async [Service] {
+    // No authorization check - public access for all including guests
     services.values().toArray().sort();
   };
 
-  public query func getAllSchemes() : async [Scheme] {
+  public query ({ caller }) func getAllSchemes() : async [Scheme] {
+    // No authorization check - public access for all including guests
     schemes.values().toArray().sort();
   };
 
-  public query func getAllNews() : async [News] {
+  public query ({ caller }) func getAllNews() : async [News] {
+    // No authorization check - public access for all including guests
     news.values().toArray().sort();
   };
 
@@ -690,6 +658,7 @@ actor {
   public shared ({ caller }) func seedInitialData() : async () {
     checkAdmin(caller);
 
+    // Add services
     ignore await addService({
       id = 0;
       title = "Aadhaar Card";
@@ -762,6 +731,7 @@ actor {
       iconName = "domicile_certificate";
     });
 
+    // Add schemes
     ignore await addScheme({
       id = 0;
       name = "PM Kisan";
@@ -854,27 +824,20 @@ actor {
     leads.add(id, lead);
     nextLeadId += 1;
 
-    // Credit reward to admin/owner wallet for every lead submitted (any person)
-    var adminPrin : ?Principal = null;
-    for ((p, role) in accessControlState.userRoles.entries()) {
-      if (role == #admin) { adminPrin := ?p };
-    };
-    switch (adminPrin) {
-      case (?admin) {
-        let wallet = getWalletInternal(admin);
-        let newWallet = {
-          wallet with
-          balance = wallet.balance + 2500;
-          totalEarned = wallet.totalEarned + 2500;
-        };
-        wallets.add(admin, newWallet);
-        let updatedLead = {
-          lead with
-          rewardCredited = true;
-        };
-        leads.add(id, updatedLead);
+    // Credit reward only if user is logged in (not anonymous)
+    if (AccessControl.hasPermission(accessControlState, caller, #user)) {
+      let wallet = getWalletInternal(caller);
+      let newWallet = {
+        wallet with
+        balance = wallet.balance + 2500;
+        totalEarned = wallet.totalEarned + 2500;
       };
-      case (null) {};
+      wallets.add(caller, newWallet);
+      let updatedLead = {
+        lead with
+        rewardCredited = true;
+      };
+      leads.add(id, updatedLead);
     };
     id;
   };
@@ -900,7 +863,7 @@ actor {
 
   // Customer Reviews
   // No auth required - guests can submit reviews
-  public shared func submitReview(authorName : Text, rating : Nat, reviewText : Text) : async Nat {
+  public shared ({ caller }) func submitReview(authorName : Text, rating : Nat, reviewText : Text) : async Nat {
     if (authorName == "") {
       Runtime.trap("Author name is required");
     };
@@ -925,7 +888,7 @@ actor {
   };
 
   // Public query - no auth required
-  public query func getApprovedReviews() : async [CustomerReview] {
+  public query ({ caller }) func getApprovedReviews() : async [CustomerReview] {
     reviews.values().filter(
       func(review) { review.approved }
     ).toArray().sort();
@@ -952,7 +915,7 @@ actor {
 
   // Customer Messages & Queries
   // No auth required - guests can submit messages
-  public shared func submitMessage(senderName : Text, phone : Text, email : Text, message : Text) : async Nat {
+  public shared ({ caller }) func submitMessage(senderName : Text, phone : Text, email : Text, message : Text) : async Nat {
     if (senderName == "") {
       Runtime.trap("Sender name is required");
     };

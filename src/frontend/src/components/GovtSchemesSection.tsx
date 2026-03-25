@@ -3,7 +3,7 @@ import { ExternalLink } from "lucide-react";
 
 export default function GovtSchemesSection() {
   return (
-    <section id="apply-services" className="py-12 px-4 bg-green-50">
+    <section id="apply-services" className="py-12 px-4 bg-muted">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h2 className="section-heading">🇮🇳 Apply for Government Services</h2>

@@ -7,7 +7,7 @@ interface Props {
 
 export default function ESathiSection({ onBook }: Props) {
   return (
-    <section id="esathi" className="py-12 px-4 bg-white">
+    <section id="esathi" className="py-12 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h2 className="section-heading">💻 eSathi Platform Services</h2>

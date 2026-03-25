@@ -7,13 +7,17 @@ import AadhaarPanSection from "./components/AadhaarPanSection";
 import AffiliateSection from "./components/AffiliateSection";
 import BookingModal from "./components/BookingModal";
 import ContactSection from "./components/ContactSection";
+import DocumentApplyEarnSection from "./components/DocumentApplyEarnSection";
 import DownloadDocumentsSection from "./components/DownloadDocumentsSection";
 import ESathiSection from "./components/ESathiSection";
 import FinanceBankSection from "./components/FinanceBankSection";
 import Footer from "./components/Footer";
 import GovtSchemesSection from "./components/GovtSchemesSection";
 import HeroSection from "./components/HeroSection";
+import LeadGenerationSection from "./components/LeadGenerationSection";
+import MessagesSection from "./components/MessagesSection";
 import Navbar from "./components/Navbar";
+import NotificationTickerBar from "./components/NotificationTickerBar";
 import ReferralWalletSection from "./components/ReferralWalletSection";
 import SearchBar from "./components/SearchBar";
 import ServicesAidBar from "./components/ServicesAidBar";
@@ -60,6 +64,7 @@ export default function App() {
 
       {/* Page layout */}
       <div className="min-h-screen flex flex-col">
+        <NotificationTickerBar />
         <SloganBanner />
         <SearchBar />
         <Navbar />
@@ -70,10 +75,13 @@ export default function App() {
           <DownloadDocumentsSection />
           <GovtSchemesSection />
           <AadhaarPanSection onBook={openBooking} />
+          <DocumentApplyEarnSection />
           <FinanceBankSection />
           <ESathiSection onBook={openBooking} />
           <AffiliateSection />
           <ReferralWalletSection />
+          <LeadGenerationSection />
+          <MessagesSection />
           <ContactSection
             onInstall={handleInstall}
             canInstall={!!installPrompt}

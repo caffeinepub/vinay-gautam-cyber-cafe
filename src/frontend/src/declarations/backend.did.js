@@ -66,6 +66,34 @@ export const CommissionLog = IDL.Record({
   'description' : IDL.Text,
   'amount' : IDL.Nat,
 });
+export const LeadSubmission = IDL.Record({
+  'id' : IDL.Nat,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'rewardCredited' : IDL.Bool,
+  'email' : IDL.Text,
+  'serviceInterest' : IDL.Text,
+  'message' : IDL.Text,
+  'phone' : IDL.Text,
+});
+export const CustomerMessage = IDL.Record({
+  'id' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'email' : IDL.Text,
+  'repliedAt' : IDL.Opt(IDL.Int),
+  'message' : IDL.Text,
+  'senderName' : IDL.Text,
+  'phone' : IDL.Text,
+  'reply' : IDL.Opt(IDL.Text),
+});
+export const CustomerReview = IDL.Record({
+  'id' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'authorName' : IDL.Text,
+  'reviewText' : IDL.Text,
+  'approved' : IDL.Bool,
+  'rating' : IDL.Nat,
+});
 export const Wallet = IDL.Record({
   'balance' : IDL.Nat,
   'totalEarned' : IDL.Nat,
@@ -99,6 +127,7 @@ export const idlService = IDL.Service({
   'addNews' : IDL.Func([News], [IDL.Int], []),
   'addScheme' : IDL.Func([Scheme], [IDL.Int], []),
   'addService' : IDL.Func([Service], [IDL.Int], []),
+  'approveReview' : IDL.Func([IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'bookAppointment' : IDL.Func([Appointment], [IDL.Int], []),
   'creditWallet' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
@@ -107,7 +136,10 @@ export const idlService = IDL.Service({
   'deleteService' : IDL.Func([IDL.Nat], [], []),
   'getAllAppointments' : IDL.Func([], [IDL.Vec(Appointment)], ['query']),
   'getAllCommissionLogs' : IDL.Func([], [IDL.Vec(CommissionLog)], ['query']),
+  'getAllLeadSubmissions' : IDL.Func([], [IDL.Vec(LeadSubmission)], ['query']),
+  'getAllMessages' : IDL.Func([], [IDL.Vec(CustomerMessage)], ['query']),
   'getAllNews' : IDL.Func([], [IDL.Vec(News)], ['query']),
+  'getAllReviews' : IDL.Func([], [IDL.Vec(CustomerReview)], ['query']),
   'getAllSchemes' : IDL.Func([], [IDL.Vec(Scheme)], ['query']),
   'getAllServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
   'getAllWallets' : IDL.Func([], [IDL.Vec(Wallet)], ['query']),
@@ -117,6 +149,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getAppointment' : IDL.Func([IDL.Nat], [Appointment], ['query']),
+  'getApprovedReviews' : IDL.Func([], [IDL.Vec(CustomerReview)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getMyWithdrawalRequests' : IDL.Func(
@@ -134,10 +167,23 @@ export const idlService = IDL.Service({
   'getWithdrawalRequest' : IDL.Func([IDL.Nat], [WithdrawalRequest], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'logCommission' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [IDL.Int], []),
+  'markLeadRewarded' : IDL.Func([IDL.Nat], [], []),
   'registerReferral' : IDL.Func([IDL.Text], [], []),
   'registerWithReferralCode' : IDL.Func([IDL.Text], [], []),
+  'replyToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'seedInitialData' : IDL.Func([], [], []),
+  'submitLead' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+  'submitMessage' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Nat],
+      [],
+    ),
+  'submitReview' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
   'submitWithdrawalRequest' : IDL.Func(
       [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
       [IDL.Int],
@@ -211,6 +257,34 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'amount' : IDL.Nat,
   });
+  const LeadSubmission = IDL.Record({
+    'id' : IDL.Nat,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'rewardCredited' : IDL.Bool,
+    'email' : IDL.Text,
+    'serviceInterest' : IDL.Text,
+    'message' : IDL.Text,
+    'phone' : IDL.Text,
+  });
+  const CustomerMessage = IDL.Record({
+    'id' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'email' : IDL.Text,
+    'repliedAt' : IDL.Opt(IDL.Int),
+    'message' : IDL.Text,
+    'senderName' : IDL.Text,
+    'phone' : IDL.Text,
+    'reply' : IDL.Opt(IDL.Text),
+  });
+  const CustomerReview = IDL.Record({
+    'id' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'authorName' : IDL.Text,
+    'reviewText' : IDL.Text,
+    'approved' : IDL.Bool,
+    'rating' : IDL.Nat,
+  });
   const Wallet = IDL.Record({
     'balance' : IDL.Nat,
     'totalEarned' : IDL.Nat,
@@ -244,6 +318,7 @@ export const idlFactory = ({ IDL }) => {
     'addNews' : IDL.Func([News], [IDL.Int], []),
     'addScheme' : IDL.Func([Scheme], [IDL.Int], []),
     'addService' : IDL.Func([Service], [IDL.Int], []),
+    'approveReview' : IDL.Func([IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'bookAppointment' : IDL.Func([Appointment], [IDL.Int], []),
     'creditWallet' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
@@ -252,7 +327,14 @@ export const idlFactory = ({ IDL }) => {
     'deleteService' : IDL.Func([IDL.Nat], [], []),
     'getAllAppointments' : IDL.Func([], [IDL.Vec(Appointment)], ['query']),
     'getAllCommissionLogs' : IDL.Func([], [IDL.Vec(CommissionLog)], ['query']),
+    'getAllLeadSubmissions' : IDL.Func(
+        [],
+        [IDL.Vec(LeadSubmission)],
+        ['query'],
+      ),
+    'getAllMessages' : IDL.Func([], [IDL.Vec(CustomerMessage)], ['query']),
     'getAllNews' : IDL.Func([], [IDL.Vec(News)], ['query']),
+    'getAllReviews' : IDL.Func([], [IDL.Vec(CustomerReview)], ['query']),
     'getAllSchemes' : IDL.Func([], [IDL.Vec(Scheme)], ['query']),
     'getAllServices' : IDL.Func([], [IDL.Vec(Service)], ['query']),
     'getAllWallets' : IDL.Func([], [IDL.Vec(Wallet)], ['query']),
@@ -262,6 +344,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAppointment' : IDL.Func([IDL.Nat], [Appointment], ['query']),
+    'getApprovedReviews' : IDL.Func([], [IDL.Vec(CustomerReview)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getMyWithdrawalRequests' : IDL.Func(
@@ -283,10 +366,23 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'logCommission' : IDL.Func([IDL.Nat, IDL.Text, IDL.Text], [IDL.Int], []),
+    'markLeadRewarded' : IDL.Func([IDL.Nat], [], []),
     'registerReferral' : IDL.Func([IDL.Text], [], []),
     'registerWithReferralCode' : IDL.Func([IDL.Text], [], []),
+    'replyToMessage' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'seedInitialData' : IDL.Func([], [], []),
+    'submitLead' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'submitMessage' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Nat],
+        [],
+      ),
+    'submitReview' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
     'submitWithdrawalRequest' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Int],

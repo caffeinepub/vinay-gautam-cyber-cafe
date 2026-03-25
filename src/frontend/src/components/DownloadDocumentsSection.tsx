@@ -3,7 +3,7 @@ import { ExternalLink } from "lucide-react";
 
 export default function DownloadDocumentsSection() {
   return (
-    <section id="download-docs" className="py-12 px-4 bg-white">
+    <section id="download-docs" className="py-12 px-4 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h2 className="section-heading">📁 Download Your Documents</h2>
